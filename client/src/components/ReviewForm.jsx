@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import StarRating from './StarRating'
+import { useAuth } from '../context/AuthContext'
 import axios from 'axios'
 
 export default function ReviewForm({ restaurantId, onReviewAdded }) {
+  const { user } = useAuth()
+  const location = useLocation()
   const [form, setForm] = useState({
-    reviewer_name: '',
     overall_score: 0,
     flavor_score: 0,
     thickness_score: 0,
@@ -15,6 +18,31 @@ export default function ReviewForm({ restaurantId, onReviewAdded }) {
   const [photo, setPhoto] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // If user is not logged in, show login prompt
+  if (!user) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-border p-6 shadow-sm text-center">
+        <h3 className="font-display text-xl font-extrabold text-dark mb-3">Rate This Ranch</h3>
+        <p className="text-gray-text mb-4">You need an account to leave a ranch rating</p>
+        <div className="flex items-center justify-center gap-3">
+          <Link
+            to="/login"
+            state={{ message: 'You need an account to leave a ranch rating', from: location.pathname }}
+            className="px-5 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white font-bold text-sm transition-colors no-underline"
+          >
+            Log In
+          </Link>
+          <Link
+            to="/signup"
+            className="px-5 py-2.5 rounded-lg border border-brand text-brand hover:bg-brand-bg font-bold text-sm transition-colors no-underline"
+          >
+            Sign Up
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -29,7 +57,6 @@ export default function ReviewForm({ restaurantId, onReviewAdded }) {
     try {
       const data = new FormData()
       data.append('restaurant_id', restaurantId)
-      data.append('reviewer_name', form.reviewer_name || 'Anonymous')
       data.append('overall_score', form.overall_score)
       data.append('flavor_score', form.flavor_score || form.overall_score)
       data.append('thickness_score', form.thickness_score || form.overall_score)
@@ -40,7 +67,6 @@ export default function ReviewForm({ restaurantId, onReviewAdded }) {
 
       await axios.post('/api/reviews', data)
       setForm({
-        reviewer_name: '',
         overall_score: 0,
         flavor_score: 0,
         thickness_score: 0,
@@ -51,7 +77,11 @@ export default function ReviewForm({ restaurantId, onReviewAdded }) {
       setPhoto(null)
       onReviewAdded?.()
     } catch (err) {
-      setError('Failed to submit review. Try again!')
+      if (err.response?.status === 401) {
+        setError('Your session expired. Please log in again.')
+      } else {
+        setError('Failed to submit review. Try again!')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -59,22 +89,16 @@ export default function ReviewForm({ restaurantId, onReviewAdded }) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-border p-6 shadow-sm">
-      <h3 className="font-display text-xl font-extrabold text-dark mb-5">Rate This Ranch</h3>
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="font-display text-xl font-extrabold text-dark">Rate This Ranch</h3>
+        <span className="text-sm text-gray-text">
+          Posting as <span className="font-bold text-dark">{user.username}</span>
+        </span>
+      </div>
 
       {error && (
         <div className="bg-accent-red/10 text-accent-red px-4 py-2.5 rounded-lg mb-4 text-sm font-medium">{error}</div>
       )}
-
-      <div className="mb-5">
-        <label className="block text-sm font-semibold text-dark mb-1.5">Your Name</label>
-        <input
-          type="text"
-          placeholder="Anonymous"
-          value={form.reviewer_name}
-          onChange={(e) => setForm({ ...form, reviewer_name: e.target.value })}
-          className="w-full px-4 py-2.5 border border-gray-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand text-dark"
-        />
-      </div>
 
       <div className="mb-5">
         <label className="block text-sm font-semibold text-dark mb-2">Overall Ranch Score *</label>

@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import axios from 'axios'
 
 export default function AddRestaurantPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [form, setForm] = useState({
     name: '',
     location: '',
@@ -15,6 +17,37 @@ export default function AddRestaurantPage() {
   const [photo, setPhoto] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // If not logged in, show auth prompt
+  if (!user) {
+    return (
+      <div>
+        <div className="bg-brand py-10 text-center">
+          <h1 className="font-display text-3xl font-extrabold text-white tracking-tight">Add a Restaurant</h1>
+          <p className="text-white/80 mt-1">Know a place that serves ranch? Add it to the database!</p>
+        </div>
+        <div className="max-w-md mx-auto px-4 py-16 text-center">
+          <p className="text-lg font-bold text-dark mb-2">You need an account to add a restaurant</p>
+          <p className="text-gray-text mb-6">Sign up or log in to contribute to the ranch database</p>
+          <div className="flex items-center justify-center gap-3">
+            <Link
+              to="/login"
+              state={{ message: 'You need an account to leave a ranch rating', from: '/add' }}
+              className="px-6 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white font-bold text-sm transition-colors no-underline"
+            >
+              Log In
+            </Link>
+            <Link
+              to="/signup"
+              className="px-6 py-2.5 rounded-lg border border-brand text-brand hover:bg-brand-bg font-bold text-sm transition-colors no-underline"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -34,7 +67,11 @@ export default function AddRestaurantPage() {
       const res = await axios.post('/api/restaurants', data)
       navigate(`/restaurant/${res.data.id}`)
     } catch (err) {
-      setError('Failed to add restaurant. Try again!')
+      if (err.response?.status === 401) {
+        setError('Your session expired. Please log in again.')
+      } else {
+        setError('Failed to add restaurant. Try again!')
+      }
     } finally {
       setSubmitting(false)
     }

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/schema');
 const upload = require('../middleware/upload');
+const { requireAuth } = require('../middleware/auth');
 
 // GET reviews for a restaurant
 router.get('/restaurant/:restaurantId', (req, res) => {
@@ -28,10 +29,10 @@ router.get('/recent', (req, res) => {
   res.json(reviews);
 });
 
-// POST new review
-router.post('/', upload.single('photo'), (req, res) => {
+// POST new review (requires auth)
+router.post('/', requireAuth, upload.single('photo'), (req, res) => {
   const {
-    restaurant_id, reviewer_name,
+    restaurant_id,
     overall_score, flavor_score, thickness_score, chill_score, dipability_score,
     review_text
   } = req.body;
@@ -48,18 +49,19 @@ router.post('/', upload.single('photo'), (req, res) => {
   const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
 
   const result = db.prepare(`
-    INSERT INTO reviews (restaurant_id, reviewer_name, overall_score, flavor_score, thickness_score, chill_score, dipability_score, review_text, photo_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO reviews (restaurant_id, reviewer_name, overall_score, flavor_score, thickness_score, chill_score, dipability_score, review_text, photo_url, user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     restaurant_id,
-    reviewer_name || 'Anonymous',
+    req.user.username,
     parseInt(overall_score),
     parseInt(flavor_score) || parseInt(overall_score),
     parseInt(thickness_score) || parseInt(overall_score),
     parseInt(chill_score) || parseInt(overall_score),
     parseInt(dipability_score) || parseInt(overall_score),
     review_text || null,
-    photo_url
+    photo_url,
+    req.user.id
   );
 
   const review = db.prepare('SELECT * FROM reviews WHERE id = ?').get(result.lastInsertRowid);

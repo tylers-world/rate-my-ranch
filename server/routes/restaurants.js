@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/schema');
 const upload = require('../middleware/upload');
+const { requireAuth } = require('../middleware/auth');
 
 // GET all restaurants with average ratings
 router.get('/', (req, res) => {
@@ -88,8 +89,8 @@ router.get('/:id', (req, res) => {
   res.json(restaurant);
 });
 
-// POST new restaurant
-router.post('/', upload.single('photo'), (req, res) => {
+// POST new restaurant (requires auth)
+router.post('/', requireAuth, upload.single('photo'), (req, res) => {
   const { name, location, cuisine_type, ranch_brand, serving_style, ranch_temperature } = req.body;
 
   if (!name || !location || !cuisine_type) {

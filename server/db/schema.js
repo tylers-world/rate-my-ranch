@@ -41,7 +41,25 @@ function initializeDatabase() {
 
     CREATE INDEX IF NOT EXISTS idx_reviews_restaurant ON reviews(restaurant_id);
     CREATE INDEX IF NOT EXISTS idx_reviews_overall ON reviews(overall_score);
+
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT NOT NULL UNIQUE,
+      email TEXT NOT NULL UNIQUE,
+      hashed_password TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username);
   `);
+
+  // Add user_id column to reviews if it doesn't exist
+  try {
+    db.exec('ALTER TABLE reviews ADD COLUMN user_id INTEGER REFERENCES users(id)');
+  } catch (e) {
+    // Column already exists, ignore
+  }
 
   return db;
 }
