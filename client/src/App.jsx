@@ -7,6 +7,7 @@ import LeaderboardPage from './pages/LeaderboardPage'
 import AddRestaurantPage from './pages/AddRestaurantPage'
 import SignUpPage from './pages/SignUpPage'
 import LoginPage from './pages/LoginPage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="/add" element={<AddRestaurantPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/profile/:username" element={<ProfilePage />} />
           </Routes>
         </main>
         <footer className="bg-gray-bg border-t border-gray-border py-8 text-center mt-16">

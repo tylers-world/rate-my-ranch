@@ -87,7 +87,7 @@ router.post('/login', (req, res) => {
 
 // GET /api/auth/me — get current user from token
 router.get('/me', requireAuth, (req, res) => {
-  const user = db.prepare('SELECT id, username, email, created_at FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT id, username, email, bio, created_at FROM users WHERE id = ?').get(req.user.id);
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
   }

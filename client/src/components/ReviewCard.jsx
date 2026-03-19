@@ -37,7 +37,9 @@ export default function ReviewCard({ review, showRestaurant = false }) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1.5">
-          <span className="font-bold text-dark text-sm">{review.reviewer_name}</span>
+          <Link to={`/profile/${review.reviewer_name}`} className="font-bold text-dark text-sm hover:text-brand transition-colors no-underline">
+            {review.reviewer_name}
+          </Link>
           {showRestaurant && review.restaurant_name && (
             <span className="text-gray-text text-sm">
               on{' '}

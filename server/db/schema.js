@@ -61,6 +61,13 @@ function initializeDatabase() {
     // Column already exists, ignore
   }
 
+  // Add bio column to users if it doesn't exist
+  try {
+    db.exec('ALTER TABLE users ADD COLUMN bio TEXT DEFAULT NULL');
+  } catch (e) {
+    // Column already exists, ignore
+  }
+
   return db;
 }
 

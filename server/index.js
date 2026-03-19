@@ -5,6 +5,7 @@ const restaurantRoutes = require('./routes/restaurants');
 const reviewRoutes = require('./routes/reviews');
 const leaderboardRoutes = require('./routes/leaderboard');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,6 +16,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);

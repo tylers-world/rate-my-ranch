@@ -92,6 +92,12 @@ export default function Navbar() {
                     <p className="font-bold text-dark text-sm truncate">{user.username}</p>
                     <p className="text-xs text-gray-text truncate">{user.email}</p>
                   </div>
+                  <Link
+                    to={`/profile/${user.username}`}
+                    className="block px-4 py-2 text-sm text-dark hover:bg-gray-bg transition-colors no-underline font-medium"
+                  >
+                    My Profile
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm text-accent-red hover:bg-gray-bg transition-colors cursor-pointer border-0 bg-transparent font-medium"
